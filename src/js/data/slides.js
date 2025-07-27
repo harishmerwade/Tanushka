@@ -1,0 +1,6 @@
+export const slides = [
+    { id: 1, image: 'https://placehold.co/1200x800/7c3f44/ffffff?text=Slide+1', boxImage: 'https://placehold.co/400x500/f8c8dc/7c3f44?text=Jewelry', title: "✨ Elevate Your Style", subtitle: "with Timeless Blush Luxury" },
+    { id: 5, image: 'https://placehold.co/1200x800/7c3f44/ffffff?text=Slide+2', boxImage: 'https://placehold.co/400x500/f8c8dc/7c3f44?text=Gifts', title: "Celebrate Your Bestie", subtitle: "Unforgettable gifts for an unbreakable bond", cta: { text: '💞 Shop Friendship Gifts', href: '#friendshipDayPage' } },
+    { id: 6, image: 'https://placehold.co/1200x800/7c3f44/ffffff?text=Slide+3', boxImage: 'https://placehold.co/400x500/f8c8dc/7c3f44?text=Rakhi', title: "For the Sweetest Bond", subtitle: "Show your love with a shimmering surprise", cta: { text: '🎁 Shop Rakhi Specials', href: '#rakhiPage' } },
+    { id: 2, image: 'https://placehold.co/1200x800/7c3f44/ffffff?text=Slide+4', boxImage: 'https://placehold.co/400x500/f8c8dc/7c3f44?text=Sapphire', title: "💎 Discover Sapphire Dreams", subtitle: "in oceans of elegance" }
+];

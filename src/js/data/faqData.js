@@ -1,0 +1,6 @@
+export const faqData = [
+    { q: "How do I care for and store Tanushka’s fashion jewelry?", a: "To keep your Tanushka pieces shining, store them in a clean, dry, airtight box. Avoid contact with moisture, perfumes, or direct sunlight. We also offer exclusive Tanushka Velvet Pouches to protect your sparkle." },
+    { q: "What should I keep in mind before shopping jewelry online?", a: "Always choose a brand that offers clear product images, honest reviews, secure payment options, and a reliable customer support team. Tanushka is a verified and trusted jewelry label, loved by thousands across India." },
+    { q: "Is Tanushka a well-known brand for western and fusion jewelry?", a: "Yes! Tanushka Jewelry is among India’s most loved emerging brands for elegant western and Indo-fusion jewelry. With over 50,000+ happy customers and 5-star reviews, we bring runway-inspired designs crafted with care." },
+    { q: "What’s your return or exchange policy?", a: "Not in love with your order? Don’t worry! We offer a 7-day hassle-free return and exchange policy on most items. Simply visit our Returns & Refunds page or reach out to our support team for a smooth experience." }
+];

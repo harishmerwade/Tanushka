@@ -1,0 +1,12 @@
+{
+  "server": {
+    "baseDir": "./",
+    "routes": {
+      "/src": "src"
+    }
+  },
+  "files": [
+    "./src/**/*.{html,htm,css,js}",
+    "./index.html"
+  ]
+}

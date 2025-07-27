@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tanushka Jewelry - Elevate Your Style</title>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="src/css/style.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@400;500;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Firebase SDK (v8 for compatibility with original structure) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <!-- MediaPipe for Virtual Try-On -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js" crossorigin="anonymous"></script>
+    
+    <!-- Three.js for 3D Animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body class="overflow-x-hidden">
+
+    <div class="sparkle-bg"></div>
+
+    <!-- Modals and Panels Container -->
+    <div id="modals-container">
+        <!-- First Order Popup -->
+        <div id="firstOrderPopup" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none">
+            <div class="bg-[var(--bg-cream)] rounded-lg shadow-2xl w-full max-w-md relative transform scale-95">
+                <button id="closePopupBtn" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800"><i data-lucide="x" class="w-6 h-6"></i></button>
+                <div class="p-8 text-center"><div class="text-6xl mb-4">🎁</div><h2 class="text-3xl font-fancy text-[var(--brand-color)] mb-2">A Gift For You!</h2><p class="text-lg mb-4">Get <span class="font-bold text-[var(--brand-color)]">10% OFF</span> your first order.</p><p class="text-sm text-gray-500 mb-6">Subscribe to our newsletter for exclusive deals.</p><form id="popup-form" class="flex flex-col sm:flex-row gap-2"><input type="email" placeholder="Enter your email" class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--brand-color)]" required><button type="submit" class="btn-primary px-6 py-3 rounded-md font-bold">Claim My 10%</button></form></div>
+            </div>
+        </div>
+        <!-- Login Modal -->
+        <div id="loginModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div class="bg-[var(--bg-cream)] rounded-lg shadow-2xl w-full max-w-sm p-8 relative">
+                <button id="closeLoginBtn" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800"><i data-lucide="x" class="w-6 h-6"></i></button>
+                <div id="phone-view">
+                    <h2 class="text-3xl font-fancy text-center text-[var(--brand-color)] mb-6">Login or Sign Up</h2>
+                    <p class="text-center text-gray-600 mb-4">Enter your phone number to receive an OTP.</p>
+                    <div class="flex items-center border-2 border-[var(--accent-color)] rounded-full p-1">
+                        <span class="px-3 text-gray-500">+91</span>
+                        <input type="tel" id="phoneNumber" placeholder="98765 43210" class="w-full bg-transparent p-2 focus:outline-none" maxlength="10">
+                    </div>
+                    <button id="sendOtpBtn" class="btn-primary w-full py-3 rounded-full font-bold mt-4">Send OTP</button>
+                    <div id="recaptcha-container" class="mt-4 flex justify-center"></div>
+                </div>
+                <div id="otp-view" class="hidden">
+                    <h2 class="text-3xl font-fancy text-center text-[var(--brand-color)] mb-6">Enter OTP</h2>
+                    <p class="text-center text-gray-600 mb-4">An OTP has been sent to <span id="otpPhoneNumber" class="font-bold"></span>.</p>
+                    <input type="text" id="otpInput" placeholder="Enter 6-digit OTP" class="w-full text-center tracking-[1em] text-2xl font-bold p-3 border-2 border-[var(--accent-color)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--brand-color)]" maxlength="6">
+                    <button id="verifyOtpBtn" class="btn-primary w-full py-3 rounded-full font-bold mt-4">Verify OTP</button>
+                    <button id="backToPhoneBtn" class="text-sm text-gray-500 hover:text-[var(--brand-color)] mt-4">Back</button>
+                </div>
+            </div>
+        </div>
+        <!-- User Details Modal -->
+        <div id="userDetailsModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div class="bg-[var(--bg-cream)] rounded-lg shadow-2xl w-full max-w-sm p-8 relative">
+                <h2 class="text-3xl font-fancy text-center text-[var(--brand-color)] mb-6">Complete Your Profile</h2>
+                <p class="text-center text-gray-600 mb-4">Just a few more details to get you started!</p>
+                <form id="userDetailsForm" class="space-y-4">
+                    <input type="text" id="userName" placeholder="Full Name" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--brand-color)]" required>
+                    <input type="email" id="userEmail" placeholder="Email Address" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--brand-color)]" required>
+                    <input type="text" id="userDob" placeholder="Date of Birth" onfocus="(this.type='date')" onblur="(this.type='text')" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--brand-color)]" required>
+                    <button type="submit" class="btn-primary w-full py-3 rounded-full font-bold">Save & Continue</button>
+                </form>
+            </div>
+        </div>
+        <!-- Wishlist Panel -->
+        <div id="wishlistPanel" class="fixed top-0 right-0 h-full w-full max-w-md bg-[var(--bg-cream)] shadow-2xl z-50 transform translate-x-full">
+            <div class="p-6 flex flex-col h-full"><div class="flex justify-between items-center border-b pb-4 mb-4"><h2 class="text-2xl font-fancy text-[var(--brand-color)]">Your Wishlist ❤</h2><button id="closeWishlistBtn"><i data-lucide="x" class="w-6 h-6"></i></button></div><div id="wishlist-items" class="flex-grow overflow-y-auto pr-2"><p class="text-gray-500 text-center py-10">Your wishlist is empty. Start adding some sparkle!</p></div></div>
+        </div>
+        <!-- Virtual Try-On Modal -->
+        <div id="tryOnModal" class="fixed inset-0 bg-black bg-opacity-60 z-[60] flex items-center justify-center p-4 transition-opacity duration-300 hidden">
+            <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col relative" style="border: 4px solid var(--accent-color); box-shadow: 0 0 20px var(--brand-color);">
+                <button id="closeTryOnBtn" class="absolute -top-4 -right-4 bg-white rounded-full p-1 text-[var(--brand-color)] hover:bg-[var(--accent-color)] z-10 shadow-lg"><i data-lucide="x-circle" class="w-8 h-8"></i></button>
+                <div id="tryOnContainer" class="flex-grow relative bg-gray-200 rounded-t-xl overflow-hidden">
+                    <div id="tryOnLoader" class="absolute inset-0 flex flex-col items-center justify-center bg-[var(--accent-color)]/80 z-20"><div class="loader text-4xl animate-spin">🪄</div><p class="text-lg font-semibold text-[var(--brand-color)] mt-4">Starting the magic...</p></div>
+                    <div id="cameraFallback" class="absolute inset-0 flex-col items-center justify-center bg-[var(--accent-color)] p-8 text-center z-10 hidden"><div class="text-6xl mb-4">📵</div><h3 class="text-2xl font-fancy text-[var(--brand-color)]">Oops! Camera Not Found</h3><p class="mt-2 text-gray-700">Please enable your camera to try on our sparkle ✨</p></div>
+                    <video id="webcam" autoplay playsinline></video>
+                    <canvas id="tryOnCanvas"></canvas>
+                </div>
+                <div class="flex-shrink-0 bg-white p-4 border-t-2 border-[var(--accent-color)] rounded-b-xl"><h4 class="text-center font-bold text-lg text-[var(--brand-color)] mb-3">Tap to Try On</h4><div id="productCarousel" class="flex items-center justify-center space-x-4"></div></div>
+            </div>
+        </div>
+        <!-- Spinning Wheel Modal -->
+        <div id="spinningWheelModal" class="fixed inset-0 bg-black bg-opacity-60 z-[70] flex-col items-center justify-center p-4 transition-opacity duration-300 hidden">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg relative p-6 text-center">
+                <button id="closeSpinningWheelBtn" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800"><i data-lucide="x" class="w-6 h-6"></i></button>
+                <h2 id="spinning-wheel-title" class="text-3xl font-fancy text-[var(--brand-color)] mb-2">Spin to Win!</h2>
+                <p id="spinning-wheel-subtitle" class="text-gray-600 mb-4">Try your luck for an exclusive festival discount!</p>
+                <div class="relative inline-block my-4">
+                    <div id="wheel" class="w-64 h-64 sm:w-80 sm:h-80 rounded-full border-8 border-yellow-300 relative overflow-hidden bg-gradient-to-tr from-pink-200 to-purple-200">
+                        <!-- Segments will be added by JS -->
+                    </div>
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full w-0 h-0 border-x-8 border-x-transparent border-b-[16px] border-b-red-500"></div>
+                </div>
+                <button id="spinBtn" class="btn-primary py-3 px-8 rounded-full text-lg font-semibold mt-4">Spin Now!</button>
+                <div id="spinResult" class="mt-4 text-xl font-bold text-green-600 h-8"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast-notification" class="bg-gray-800 text-white py-3 px-6 rounded-full shadow-lg font-semibold flex items-center gap-2">
+        <span id="toast-icon"></span>
+        <span id="toast-message"></span>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-[var(--bg-cream)]/80 backdrop-blur-sm sticky top-0 z-40 shadow-sm">
+        <div class="container mx-auto px-4 sm:px-6 py-3">
+            <div class="relative flex justify-between items-center h-12">
+                <div class="flex justify-start">
+                    <div id="animated-search-container" class="relative flex items-center">
+                        <input type="search" placeholder="Search..." id="animated-search-input" class="h-10 border rounded-full border-[var(--brand-color)] focus:outline-none bg-white/50 w-0 opacity-0 p-0 transition-all duration-300">
+                        <button id="animated-search-btn" class="p-2 text-[var(--brand-color)]">
+                            <i data-lucide="search" class="w-6 h-6 search-icon"></i>
+                            <i data-lucide="x" class="w-6 h-6 close-icon hidden"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                    <a href="#homePage" class="nav-link">
+                        <img src="https://placehold.co/200x50/fffafc/7c3f44?text=Tanushka&font=dancing-script" alt="Tanushka Logo" class="h-12" onerror="this.onerror=null; this.alt='Tanushka'; this.parentElement.innerHTML='<span class=\'text-4xl font-script font-bold text-[var(--brand-color)]\'>Tanushka</span>'">
+                    </a>
+                </div>
+                <div class="flex justify-end">
+                    <div class="flex items-center space-x-2 sm:space-x-4">
+                        <button id="wishlistBtn" class="p-2 relative"><i data-lucide="heart" class="w-6 h-6"></i><span id="wishlist-count" class="absolute -top-1 -right-1 bg-[var(--brand-color)] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center border-2 border-[var(--bg-cream)]">0</span></button>
+                        <div id="user-auth-container">
+                            <button id="loginBtn" class="p-2"><i data-lucide="user" class="w-6 h-6"></i></button>
+                        </div>
+                        <a href="#cartPage" class="nav-link relative p-2"><i data-lucide="shopping-cart" class="w-6 h-6"></i><span id="cart-count" class="absolute -top-1 -right-1 bg-[var(--brand-color)] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center border-2 border-[var(--bg-cream)]">0</span></a>
+                        <button id="tryNowNavBtn" class="try-now-btn text-white font-bold py-2 px-4 rounded-full text-sm hidden sm:flex items-center gap-2 transition-transform hover:scale-105">
+                            <span class="sparkle">✨</span> Try Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <nav class="w-full mt-2">
+                <div class="flex justify-center items-center space-x-4 sm:space-x-8 text-base font-medium text-gray-700 flex-wrap">
+                    <a href="#homePage" class="nav-link hover:text-[var(--brand-color)] transition-colors">Home</a>
+                    <a href="#offers" class="nav-link scroll-link hover:text-[var(--brand-color)] transition-colors">Offers</a>
+                    <div class="relative group">
+                        <a href="#festival-offers" class="nav-link scroll-link hover:text-[var(--brand-color)] transition-colors flex items-center">Festive Edit <i data-lucide="chevron-down" class="w-4 h-4 ml-1"></i></a>
+                        <div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto z-50">
+                            <a href="#friendshipDayPage" class="nav-link block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-[var(--brand-color)]">💞 Friendship Day</a>
+                            <a href="#rakhiPage" class="nav-link block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-[var(--brand-color)]">🎁 Rakhi Specials</a>
+                        </div>
+                    </div>
+                    <a href="#collectionsPage" class="nav-link hover:text-[var(--brand-color)] transition-colors">Collections</a>
+                    <a href="#our-story" class="nav-link scroll-link hover:text-[var(--brand-color)] transition-colors">Our Story</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area (Dynamically populated by JS) -->
+    <main id="main-content"></main>
+    
+    <!-- CHATBOT -->
+    <div id="chatbot-container" class="fixed bottom-5 right-5 z-50">
+        <div id="chatbot-window" class="hidden bg-white rounded-2xl w-[350px] h-[500px] flex flex-col overflow-hidden border-2 border-[var(--accent-color)] shadow-2xl" style="transform-origin: bottom right;">
+            <header class="bg-[var(--brand-color)] text-white p-4 flex justify-between items-center shadow-md">
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        <img src="https://placehold.co/40x40/d5c1e5/7c3f44?text=T" alt="Chatbot avatar" class="rounded-full w-10 h-10 bg-pink-200" onerror="this.onerror=null; this.src='https://placehold.co/40x40/d5c1e5/7c3f44?text=T'">
+                        <span class="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-white"></span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold">Tia ✨</h3>
+                        <p class="text-xs opacity-80">Your Personal Shopper</p>
+                    </div>
+                </div>
+                <button id="close-chatbot-btn" class="text-white opacity-70 hover:opacity-100"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </header>
+            <div id="chatbot-messages" class="flex-1 p-4 overflow-y-auto bg-[var(--bg-cream)]"></div>
+            <footer class="p-3 border-t bg-white">
+                <div id="chatbot-options" class="flex flex-wrap gap-2 mb-2"></div>
+                <div class="flex items-center gap-2">
+                    <input type="text" id="chatbot-input" placeholder="Type your message..." class="w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-[var(--brand-color)]">
+                    <button id="chatbot-send-btn" class="btn-primary rounded-full p-3 flex-shrink-0"><i data-lucide="send" class="w-5 h-5"></i></button>
+                </div>
+            </footer>
+        </div>
+        <button id="chatbot-toggle-btn" class="bg-[var(--brand-color)] text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg transition-transform hover:scale-110">
+            <i data-lucide="message-circle" class="w-8 h-8 open-icon"></i>
+            <i data-lucide="x" class="w-8 h-8 close-icon hidden"></i>
+        </button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t mt-16">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+                <div><h4 class="font-bold text-lg mb-4">Quick Links</h4><ul>
+                    <li class="mb-2"><a href="#our-story" class="scroll-link nav-link hover:text-[var(--brand-color)]">About Us</a></li>
+                    <li class="mb-2"><a href="#contactPage" class="nav-link hover:text-[var(--brand-color)]">Contact</a></li>
+                    <li class="mb-2"><a href="#faq" class="nav-link scroll-link hover:text-[var(--brand-color)]">FAQ</a></li>
+                    <li class="mb-2"><a href="#returnPolicyPage" class="nav-link hover:text-[var(--brand-color)]">Return Policy</a></li>
+                </ul></div>
+                <div><h4 class="font-bold text-lg mb-4">Follow Us</h4><div class="flex space-x-4"><a href="#" class="text-gray-500 hover:text-[var(--brand-color)]"><i data-lucide="instagram" class="w-6 h-6"></i></a><a href="#" class="text-gray-500 hover:text-[var(--brand-color)]"><i data-lucide="facebook" class="w-6 h-6"></i></a><a href="#" class="text-gray-500 hover:text-[var(--brand-color)]"><i data-lucide="pinterest" class="w-6 h-6"></i></a></div></div>
+                <div><h4 class="font-bold text-lg mb-4">Payment Methods</h4><div class="flex flex-wrap gap-2 items-center">
+                    <img src="https://placehold.co/50x32/white/black?text=VISA" class="h-8" alt="Visa" onerror="this.style.display='none'"/>
+                    <img src="https://placehold.co/50x32/white/black?text=MC" class="h-8" alt="Mastercard" onerror="this.style.display='none'"/>
+                    <img src="https://placehold.co/50x32/white/black?text=PayPal" class="h-8" alt="Paypal" onerror="this.style.display='none'"/>
+                    <img src="https://placehold.co/50x32/white/black?text=UPI" class="h-8" alt="UPI" onerror="this.style.display='none'"/>
+                </div></div>
+                <div><h4 class="font-bold text-lg mb-4">Trust Badges</h4><div class="flex items-center gap-4"><div class="text-center"><i data-lucide="shield-check" class="w-8 h-8 text-green-600 mx-auto"></i><p class="text-xs">SSL Secure</p></div><div class="text-center"><i data-lucide="package-check" class="w-8 h-8 text-blue-600 mx-auto"></i><p class="text-xs">Easy Returns</p></div></div></div>
+            </div>
+            <div class="border-t pt-8 text-center text-gray-500"><p>© 2025 Tanushka Jewelry. All Rights Reserved.</p></div>
+        </div>
+    </footer>
+
+    <!-- Main Application Script -->
+    <script type="module" src="src/js/main.js"></script>
+</body>
+</html>
